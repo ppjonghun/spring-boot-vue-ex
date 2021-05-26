@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.admin.mapper.TwoidEventMapper">
+    <resultMap id="gfnTwoidEventMap" type="com.example.admin.vo.TwoidEventInfo">
+        <result property="eventId"     column="EVENT_ID"/>
+        <result property="startDt"     column="START_DT"/>
+        <result property="endDt"     column="END_DT"/>
+        <result property="eventNm"     column="EVENT_NM"/>
+        <result property="statusCd"    column="STATUS_CD"/>
+        <result property="createId"    column="CREATE_ID"/>
+        <result property="createDt"    column="CREATE_DT"/>
+        <result property="updateId"    column="UPDATE_ID"/>
+        <result property="updateDt"    column="UPDATE_DT"/>
+        <result property="totalCount"  column="TOTAL_COUNT"/>
+    </resultMap>
+
+    <insert id="insertTwoidEvent">
+        INSERT INTO TEST_TWOID_EVENT
+		(
+            EVENT_ID
+            ,START_DT
+            ,END_DT
+            ,EVENT_NM
+            ,CREATE_ID
+            ,CREATE_DT
+		)
+		VALUES
+		(
+		     #{eventId}
+            ,to_date(#{startDt} || '000000', 'yyyyMMddhh24miss')
+            ,to_date(#{endDt} || '235959', 'yyyyMMddhh24miss')
+            ,#{eventNm}
+            ,#{createId, jdbcType=VARCHAR}
+            ,#{createDt, jdbcType=VARCHAR}
+		)
+    </insert>
+
+    <select id="selectTwoidEventList" resultMap="gfnTwoidEventMap">
+        SELECT
+        EVENT_ID
+        ,to_char(START_DT, 'yyyyMMdd') as START_DT
+        ,to_char(END_DT, 'yyyyMMdd') as END_DT
+        ,EVENT_NM
+        ,CREATE_ID
+        ,CREATE_DT
+        ,UPDATE_ID
+        ,UPDATE_DT
+        ,TOTAL_COUNT
+        FROM TEST_TWOID_EVENT
+        CROSS APPLY ( SELECT COUNT(*) TOTAL_COUNT FROM TEST_TWOID_EVENT ) cnt
+        ORDER BY CREATE_DT DESC
+        OFFSET #{offset} ROWS FETCH FIRST #{limit} ROWS ONLY
+    </select>
+
+    <select id="selectTwoidEventOne" resultMap="gfnTwoidEventMap">
+        SELECT
+        EVENT_ID
+        ,to_char(START_DT, 'yyyyMMdd') as START_DT
+        ,to_char(END_DT, 'yyyyMMdd') as END_DT
+        ,EVENT_NM
+        ,CREATE_ID
+        ,CREATE_DT
+        ,UPDATE_ID
+        ,UPDATE_DT
+        FROM TEST_TWOID_EVENT
+        <where>
+                AND EVENT_ID = #{eventId}
+        </where>
+    </select>
+
+    <update id="updateTwoidEvent">
+        UPDATE TEST_TWOID_EVENT
+        <set>
+            <if test="!@com.example.admin.utils.StringUtil@empty(startDt)">START_DT=to_date(#{startDt}|| '000000', 'yyyyMMddhh24miss'),</if>
+            <if test="!@com.example.admin.utils.StringUtil@empty(endDt)">END_DT=to_date(#{endDt} || '235959', 'yyyyMMddhh24miss'),</if>
+            <if test="!@com.example.admin.utils.StringUtil@empty(eventNm)">EVENT_NM= #{eventNm},</if>
+            UPDATE_ID = #{updateId},
+            UPDATE_DT = #{updateDt}
+        </set>
+        WHERE EVENT_ID = #{eventId}
+    </update>
+
+    <update id="deleteTwoidEvent">
+        DELETE FROM TEST_TWOID_EVENT
+        WHERE EVENT_ID = #{eventId}
+    </update>
+</mapper>
